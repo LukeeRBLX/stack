@@ -1,11 +1,11 @@
 import { Button, Slider } from '@stackframe/stack-ui';
-import { useRef, useState } from 'react';
+import { Edit } from 'lucide-react';
+import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { UserAvatar } from './elements/user-avatar';
-import { User } from '..';
 
 export function ProfileImageEditor(props: {
-  user: User,
+  user: NonNullable<ComponentProps<typeof UserAvatar>['user']>,
   onProfileImageUrlChange: (profileImageUrl: string | null) => void,
 }) {
   const cropRef = useRef<AvatarEditor>(null);
@@ -13,17 +13,19 @@ export function ProfileImageEditor(props: {
   const [editing, setEditing] = useState(false);
 
   if (!editing) {
-    return <div className='flex flex-col items-center'>
+    return <div className='relative flex'>
       <UserAvatar
-        size={150}
+        size={100}
         user={props.user}
       />
-      <Button onClick={() => setEditing(true)}>Edit</Button>
+      <Button className='absolute top-0 right-0' variant='ghost' size='icon' onClick={() => setEditing(true)}>
+        <Edit className='h-5 w-5' />
+      </Button>
     </div>;
   }
 
   return (
-    <div className='flex flex-col items-center'>
+    <div className='flex flex-col items-center gap-4'>
       <AvatarEditor
         ref={cropRef}
         image={props.user.profileImageUrl || ""}
@@ -32,6 +34,7 @@ export function ProfileImageEditor(props: {
         scale={slideValue}
         rotate={0}
         border={20}
+        className='border'
       />
       <Slider
         min={1}
@@ -41,17 +44,18 @@ export function ProfileImageEditor(props: {
         value={[slideValue]}
         onValueChange={(v) => setSlideValue(v[0])}
       />
+
       <div className='flex flex-row gap-2'>
         <Button
           variant="secondary"
-        // onClick={() => setOpen(false)}
+          onClick={() => setEditing(false)}
         >
-        Cancel
+          Cancel
         </Button>
         <Button
         // onClick={handleSave}
         >
-        Save
+          Save
         </Button>
       </div>
     </div>

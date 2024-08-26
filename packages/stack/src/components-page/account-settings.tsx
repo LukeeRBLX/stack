@@ -98,7 +98,7 @@ function ProfileSection() {
 
   return (
     <div>
-      <div>
+      <div className='flex'>
         <ProfileImageEditor user={user} onProfileImageUrlChange={() => {}}/>
       </div>
       <div>
