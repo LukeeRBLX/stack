@@ -1,4 +1,4 @@
-import { Button, Slider } from '@stackframe/stack-ui';
+import { Button, Input, Slider } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
@@ -24,12 +24,20 @@ export function ProfileImageEditor(props: {
     </div>;
   }
 
+  if (!props.user.profileImageUrl) {
+    return <div className='flex flex-col md:flex-row gap-2'>
+      <Input type='file' />
+      <Button>Upload</Button>
+      <Button variant='secondary'>Cancel</Button>
+    </div>;
+  }
+
   return (
     <div className='flex flex-col items-center gap-4'>
       <AvatarEditor
         ref={cropRef}
         image={props.user.profileImageUrl || ""}
-        borderRadius={150}
+        borderRadius={1000}
         color={[0, 0, 0, 0.72]}
         scale={slideValue}
         rotate={0}
