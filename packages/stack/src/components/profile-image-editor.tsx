@@ -3,6 +3,16 @@ import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { UserAvatar } from './elements/user-avatar';
+import { runAsynchronously } from '@stackframe/stack-shared/dist/utils/promises';
+
+function getBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+}
 
 export function ProfileImageEditor(props: {
   user: NonNullable<ComponentProps<typeof UserAvatar>['user']>,
@@ -11,6 +21,8 @@ export function ProfileImageEditor(props: {
   const cropRef = useRef<AvatarEditor>(null);
   const [slideValue, setSlideValue] = useState(1);
   const [editing, setEditing] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
 
   if (!editing) {
     return <div className='relative flex'>
@@ -24,10 +36,23 @@ export function ProfileImageEditor(props: {
     </div>;
   }
 
-  if (!props.user.profileImageUrl) {
+  if (!props.user.profileImageUrl && !url) {
     return <div className='flex flex-col md:flex-row gap-2'>
-      <Input type='file' />
-      <Button>Upload</Button>
+      <Input type='file' onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setFile(file);
+      }} />
+      <Button
+        onClick={() => runAsynchronously(async () => {
+          if (!file) return;
+          const base64 = await getBase64(file);
+          setUrl(base64);
+        })}
+        disabled={!file}
+      >
+        Upload
+      </Button>
       <Button variant='secondary'>Cancel</Button>
     </div>;
   }
@@ -36,7 +61,7 @@ export function ProfileImageEditor(props: {
     <div className='flex flex-col items-center gap-4'>
       <AvatarEditor
         ref={cropRef}
-        image={props.user.profileImageUrl || ""}
+        image={url || props.user.profileImageUrl || ""}
         borderRadius={1000}
         color={[0, 0, 0, 0.72]}
         scale={slideValue}
@@ -56,7 +81,12 @@ export function ProfileImageEditor(props: {
       <div className='flex flex-row gap-2'>
         <Button
           variant="secondary"
-          onClick={() => setEditing(false)}
+          onClick={() => {
+            setEditing(false);
+            setSlideValue(1);
+            setUrl(null);
+            setFile(null);
+          }}
         >
           Cancel
         </Button>
