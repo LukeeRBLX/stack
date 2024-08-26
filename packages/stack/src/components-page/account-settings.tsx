@@ -16,10 +16,10 @@ import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { CurrentUser, MessageCard, Project, Team, useStackApp, useUser } from '..';
 import { FormWarningText } from '../components/elements/form-warning';
-import { MaybeFullPage } from "../components/elements/maybe-full-page";
 import { SidebarLayout } from '../components/elements/sidebar-layout';
 import { UserAvatar } from '../components/elements/user-avatar';
 import { TeamIcon } from '../components/team-icon';
+import { ProfileImageEditor } from "../components/profile-image-editor";
 
 
 export function AccountSettings({ fullPage=false }: { fullPage?: boolean }) {
@@ -98,6 +98,9 @@ function ProfileSection() {
 
   return (
     <div>
+      <div>
+        <ProfileImageEditor profileImageUrl={"https://randomuser.me/api/portraits/lego/8.jpg"} onProfileImageUrlChange={() => {}}/>
+      </div>
       <div>
         <Label>Display name</Label>
         <EditableText value={user.displayName || ''} onSave={async (newDisplayName) => {
