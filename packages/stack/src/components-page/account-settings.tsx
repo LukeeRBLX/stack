@@ -99,7 +99,7 @@ function ProfileSection() {
   return (
     <div>
       <div>
-        <ProfileImageEditor profileImageUrl={"https://randomuser.me/api/portraits/lego/8.jpg"} onProfileImageUrlChange={() => {}}/>
+        <ProfileImageEditor user={user} onProfileImageUrlChange={() => {}}/>
       </div>
       <div>
         <Label>Display name</Label>

@@ -1,19 +1,32 @@
 import { Button, Slider } from '@stackframe/stack-ui';
 import { useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
+import { UserAvatar } from './elements/user-avatar';
+import { User } from '..';
 
 export function ProfileImageEditor(props: {
-  profileImageUrl: string | null,
+  user: User,
   onProfileImageUrlChange: (profileImageUrl: string | null) => void,
 }) {
   const cropRef = useRef<AvatarEditor>(null);
   const [slideValue, setSlideValue] = useState(1);
+  const [editing, setEditing] = useState(false);
+
+  if (!editing) {
+    return <div className='flex flex-col items-center'>
+      <UserAvatar
+        size={150}
+        user={props.user}
+      />
+      <Button onClick={() => setEditing(true)}>Edit</Button>
+    </div>;
+  }
 
   return (
     <div className='flex flex-col items-center'>
       <AvatarEditor
         ref={cropRef}
-        image={props.profileImageUrl || ""}
+        image={props.user.profileImageUrl || ""}
         borderRadius={150}
         color={[0, 0, 0, 0.72]}
         scale={slideValue}
