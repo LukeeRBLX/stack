@@ -1,10 +1,16 @@
-import { Button, Input, Slider, buttonVariants } from '@stackframe/stack-ui';
+import { Button, Input, Slider, Typography, buttonVariants } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { UserAvatar } from './elements/user-avatar';
 import { runAsynchronously } from '@stackframe/stack-shared/dist/utils/promises';
 import { useUser } from '..';
+
+async function checkImage(url: string){
+  const res = await fetch(url);
+  const buff = await res.blob();
+  return buff.type.startsWith('image/');
+}
 
 function getBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -23,10 +29,12 @@ export function ProfileImageEditor(props: {
   const cropRef = useRef<AvatarEditor>(null);
   const [slideValue, setSlideValue] = useState(1);
   const [rawUrl, setRawUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function reset() {
     setSlideValue(1);
     setRawUrl(null);
+    setError(null);
   }
 
   function upload() {
@@ -36,7 +44,14 @@ export function ProfileImageEditor(props: {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       getBase64(file)
-        .then(setRawUrl)
+        .then(async (rawUrl) => {
+          if (await checkImage(rawUrl)) {
+            setRawUrl(rawUrl);
+            setError(null);
+          } else {
+            setError('Invalid image');
+          }
+        })
         .then(() => input.remove())
         .catch(console.error);
     };
@@ -49,13 +64,15 @@ export function ProfileImageEditor(props: {
         <UserAvatar
           size={100}
           user={props.user}
+          border
         />
         <div className='absolute top-0 left-0 h-[100px] w-[100px] bg-gray-500/20 backdrop-blur-sm items-center justify-center rounded-full flex opacity-0 hover:opacity-100 transition-opacity'>
-          <div className='bg-white p-2 rounded-full'>
+          <div className='bg-background p-2 rounded-full'>
             <Edit className='h-5 w-5' />
           </div>
         </div>
       </div>
+      {error && <Typography variant='destructive' type='label'>{error}</Typography>}
     </div>;
   }
 

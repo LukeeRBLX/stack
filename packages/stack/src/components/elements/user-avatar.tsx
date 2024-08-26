@@ -10,10 +10,11 @@ export function UserAvatar(props: {
     displayName?: string | null,
     primaryEmail?: string | null,
   } | null,
+  border?: boolean,
 }) {
   const user = props.user;
   return (
-    <Avatar style={{ height: props.size || defaultSize, width: props.size || defaultSize }}>
+    <Avatar style={{ height: props.size || defaultSize, width: props.size || defaultSize }} className={props.border ? 'border' : ''}>
       <AvatarImage src={user?.profileImageUrl || ''} />
       <AvatarFallback>
         {user ?
