@@ -1,7 +1,11 @@
 export async function checkImageUrl(url: string){
-  const res = await fetch(url, { method: 'HEAD' });
-  const buff = await res.blob();
-  return buff.type.startsWith('image/');
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    const buff = await res.blob();
+    return buff.type.startsWith('image/');
+  } catch (e) {
+    return false;
+  }
 }
 
 export function  getBase64(file: File): Promise<string> {

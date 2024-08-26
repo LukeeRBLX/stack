@@ -4,7 +4,7 @@ import { sendUserCreatedWebhook, sendUserDeletedWebhook, sendUserUpdatedWebhook 
 import { prismaClient } from "@/prisma-client";
 import { createCrudHandlers } from "@/route-handlers/crud-handler";
 import { BooleanTrue, Prisma } from "@prisma/client";
-import { KnownErrors } from "@stackframe/stack-shared";
+import { KnownError, KnownErrors } from "@stackframe/stack-shared";
 import { currentUserCrud } from "@stackframe/stack-shared/dist/interface/crud/current-user";
 import { UsersCrud, usersCrud } from "@stackframe/stack-shared/dist/interface/crud/users";
 import { userIdOrMeSchema, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
@@ -860,6 +860,7 @@ export const currentUserCrudHandlers = createLazyProxy(() => createCrudHandlers(
     return await usersCrudHandlers.adminRead({
       project: auth.project,
       user_id: auth.user?.id ?? throwErr(new KnownErrors.CannotGetOwnUserWithoutUser()),
+      allowedErrorTypes: [Error]
     });
   },
   async onUpdate({ auth, data }) {
@@ -867,12 +868,14 @@ export const currentUserCrudHandlers = createLazyProxy(() => createCrudHandlers(
       project: auth.project,
       user_id: auth.user?.id ?? throwErr(new KnownErrors.CannotGetOwnUserWithoutUser()),
       data,
+      allowedErrorTypes: [Error]
     });
   },
   async onDelete({ auth }) {
     return await usersCrudHandlers.adminDelete({
       project: auth.project,
       user_id: auth.user?.id ?? throwErr(new KnownErrors.CannotGetOwnUserWithoutUser()),
+      allowedErrorTypes: [Error]
     });
   },
 }));
