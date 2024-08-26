@@ -21,15 +21,28 @@ export function ProfileImageEditor(props: {
   const cropRef = useRef<AvatarEditor>(null);
   const [slideValue, setSlideValue] = useState(1);
   const [editing, setEditing] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
 
   function reset() {
     setEditing(false);
     setSlideValue(1);
     setUrl(null);
-    setFile(null);
   }
+
+  function upload() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      getBase64(file)
+        .then(setUrl)
+        .then(() => input.remove())
+        .catch(console.error);
+    };
+    input.click();
+  }
+
 
   if (!editing) {
     return <div className='relative flex'>
@@ -45,20 +58,10 @@ export function ProfileImageEditor(props: {
 
   if (!props.user.profileImageUrl && !url) {
     return <div className='flex flex-col md:flex-row gap-2'>
-      <Input type='file' onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setFile(file);
-      }} />
       <Button
-        onClick={() => runAsynchronously(async () => {
-          if (!file) return;
-          const base64 = await getBase64(file);
-          setUrl(base64);
-        })}
-        disabled={!file}
+        onClick={upload}
       >
-        Upload
+        Update Profile Image
       </Button>
       <Button
         variant='secondary'
@@ -89,18 +92,24 @@ export function ProfileImageEditor(props: {
         value={[slideValue]}
         onValueChange={(v) => setSlideValue(v[0])}
       />
+      <Button onClick={upload} variant='outline'>
+        Update a new image
+      </Button>
 
       <div className='flex flex-row gap-2'>
+        <Button
+          onClick={async () => {
+            if (!url) return;
+
+          }}
+        >
+          Save
+        </Button>
         <Button
           variant="secondary"
           onClick={reset}
         >
           Cancel
-        </Button>
-        <Button
-        // onClick={handleSave}
-        >
-          Save
         </Button>
       </div>
     </div>

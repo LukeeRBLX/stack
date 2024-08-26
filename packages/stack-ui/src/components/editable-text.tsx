@@ -27,7 +27,8 @@ export function EditableText(props: { value: string, onSave?: (value: string) =>
             onClick={() => {
               setEditingValue(props.value);
               setEditing(false);
-            }}>
+            }}
+          >
             Cancel
           </Button>
         </>
