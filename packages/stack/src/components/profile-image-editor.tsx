@@ -1,10 +1,21 @@
-import { checkImageUrl, getBase64 } from '@stackframe/stack-shared/dist/utils/files';
+import { fileToBase64 } from '@stackframe/stack-shared/dist/utils/base64';
 import { Button, Slider, Typography } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { useUser } from '..';
 import { UserAvatar } from './elements/user-avatar';
+import imageCompression from 'browser-image-compression';
+
+export async function checkImageUrl(url: string){
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    const buff = await res.blob();
+    return buff.type.startsWith('image/');
+  } catch (e) {
+    return false;
+  }
+}
 
 export function ProfileImageEditor(props: {
   user: NonNullable<ComponentProps<typeof UserAvatar>['user']>,
@@ -28,7 +39,7 @@ export function ProfileImageEditor(props: {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      getBase64(file)
+      fileToBase64(file)
         .then(async (rawUrl) => {
           if (await checkImageUrl(rawUrl)) {
             setRawUrl(rawUrl);
@@ -87,9 +98,15 @@ export function ProfileImageEditor(props: {
           onClick={async () => {
             if (cropRef.current && rawUrl) {
               const croppedUrl = cropRef.current.getImage().toDataURL('image/jpeg');
-              await user.update({
-                profileImageUrl: croppedUrl,
-              });
+              const compressedFile = await imageCompression(
+                await imageCompression.getFilefromDataUrl(croppedUrl, 'profile-image'),
+                {
+                  maxSizeMB: 0.1,
+                  fileType: "image/jpeg",
+                }
+              );
+              const compressedUrl = await imageCompression.getDataUrlFromFile(compressedFile);
+              await user.update({ profileImageUrl: compressedUrl });
               reset();
             }
           }}

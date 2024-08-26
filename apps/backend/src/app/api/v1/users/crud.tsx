@@ -4,17 +4,17 @@ import { sendUserCreatedWebhook, sendUserDeletedWebhook, sendUserUpdatedWebhook 
 import { prismaClient } from "@/prisma-client";
 import { createCrudHandlers } from "@/route-handlers/crud-handler";
 import { BooleanTrue, Prisma } from "@prisma/client";
-import { KnownError, KnownErrors } from "@stackframe/stack-shared";
+import { KnownErrors } from "@stackframe/stack-shared";
 import { currentUserCrud } from "@stackframe/stack-shared/dist/interface/crud/current-user";
 import { UsersCrud, usersCrud } from "@stackframe/stack-shared/dist/interface/crud/users";
 import { userIdOrMeSchema, yupObject, yupString } from "@stackframe/stack-shared/dist/schema-fields";
+import { validateBase64 } from "@stackframe/stack-shared/dist/utils/base64";
 import { decodeBase64 } from "@stackframe/stack-shared/dist/utils/bytes";
 import { StackAssertionError, StatusError, throwErr } from "@stackframe/stack-shared/dist/utils/errors";
 import { hashPassword } from "@stackframe/stack-shared/dist/utils/password";
 import { createLazyProxy } from "@stackframe/stack-shared/dist/utils/proxies";
 import { typedToLowercase } from "@stackframe/stack-shared/dist/utils/strings";
 import { teamPrismaToCrud, teamsCrudHandlers } from "../teams/crud";
-import { checkImageUrl } from "@stackframe/stack-shared/dist/utils/files";
 
 export const userFullInclude = {
   projectUserOAuthAccounts: {
@@ -302,7 +302,7 @@ export const usersCrudHandlers = createLazyProxy(() => createCrudHandlers(usersC
   },
   onCreate: async ({ auth, data }) => {
     const result = await prismaClient.$transaction(async (tx) => {
-      if (data.profile_image_url && !(await checkImageUrl(data.profile_image_url))) {
+      if (auth.type === 'client' && data.profile_image_url && !validateBase64(data.profile_image_url)) {
         throw new StatusError(400, "Invalid profile image URL");
       }
 
@@ -517,7 +517,7 @@ export const usersCrudHandlers = createLazyProxy(() => createCrudHandlers(usersC
   },
   onUpdate: async ({ auth, data, params }) => {
     const result = await prismaClient.$transaction(async (tx) => {
-      if (data.profile_image_url && !(await checkImageUrl(data.profile_image_url))) {
+      if (auth.type === 'client' && data.profile_image_url && !validateBase64(data.profile_image_url)) {
         throw new StatusError(400, "Invalid profile image URL");
       }
 
