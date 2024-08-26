@@ -24,6 +24,13 @@ export function ProfileImageEditor(props: {
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
 
+  function reset() {
+    setEditing(false);
+    setSlideValue(1);
+    setUrl(null);
+    setFile(null);
+  }
+
   if (!editing) {
     return <div className='relative flex'>
       <UserAvatar
@@ -53,7 +60,12 @@ export function ProfileImageEditor(props: {
       >
         Upload
       </Button>
-      <Button variant='secondary'>Cancel</Button>
+      <Button
+        variant='secondary'
+        onClick={reset}
+      >
+        Cancel
+      </Button>
     </div>;
   }
 
@@ -81,12 +93,7 @@ export function ProfileImageEditor(props: {
       <div className='flex flex-row gap-2'>
         <Button
           variant="secondary"
-          onClick={() => {
-            setEditing(false);
-            setSlideValue(1);
-            setUrl(null);
-            setFile(null);
-          }}
+          onClick={reset}
         >
           Cancel
         </Button>
