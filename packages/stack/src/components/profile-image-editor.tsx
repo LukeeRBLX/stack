@@ -1,25 +1,10 @@
-import { Button, Input, Slider, Typography, buttonVariants } from '@stackframe/stack-ui';
+import { checkImage, getBase64 } from '@stackframe/stack-shared/dist/utils/files';
+import { Button, Slider, Typography } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
-import { UserAvatar } from './elements/user-avatar';
-import { runAsynchronously } from '@stackframe/stack-shared/dist/utils/promises';
 import { useUser } from '..';
-
-async function checkImage(url: string){
-  const res = await fetch(url);
-  const buff = await res.blob();
-  return buff.type.startsWith('image/');
-}
-
-function getBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
-}
+import { UserAvatar } from './elements/user-avatar';
 
 export function ProfileImageEditor(props: {
   user: NonNullable<ComponentProps<typeof UserAvatar>['user']>,

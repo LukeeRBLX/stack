@@ -14,6 +14,7 @@ import { hashPassword } from "@stackframe/stack-shared/dist/utils/password";
 import { createLazyProxy } from "@stackframe/stack-shared/dist/utils/proxies";
 import { typedToLowercase } from "@stackframe/stack-shared/dist/utils/strings";
 import { teamPrismaToCrud, teamsCrudHandlers } from "../teams/crud";
+import { checkImageUrl } from "@stackframe/stack-shared/dist/utils/files";
 
 export const userFullInclude = {
   projectUserOAuthAccounts: {
@@ -301,6 +302,10 @@ export const usersCrudHandlers = createLazyProxy(() => createCrudHandlers(usersC
   },
   onCreate: async ({ auth, data }) => {
     const result = await prismaClient.$transaction(async (tx) => {
+      if (data.profile_image_url && !(await checkImageUrl(data.profile_image_url))) {
+        throw new StatusError(400, "Invalid profile image URL");
+      }
+
       await checkAuthData(tx, {
         projectId: auth.project.id,
         primaryEmail: data.primary_email,
@@ -512,6 +517,10 @@ export const usersCrudHandlers = createLazyProxy(() => createCrudHandlers(usersC
   },
   onUpdate: async ({ auth, data, params }) => {
     const result = await prismaClient.$transaction(async (tx) => {
+      if (data.profile_image_url && !(await checkImageUrl(data.profile_image_url))) {
+        throw new StatusError(400, "Invalid profile image URL");
+      }
+
       await ensureUserExist(tx, { projectId: auth.project.id, userId: params.user_id });
 
       if (data.selected_team_id !== undefined) {
