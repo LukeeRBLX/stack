@@ -1,4 +1,4 @@
-import { checkImage, getBase64 } from '@stackframe/stack-shared/dist/utils/files';
+import { checkImageUrl, getBase64 } from '@stackframe/stack-shared/dist/utils/files';
 import { Button, Slider, Typography } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
@@ -30,7 +30,7 @@ export function ProfileImageEditor(props: {
       if (!file) return;
       getBase64(file)
         .then(async (rawUrl) => {
-          if (await checkImage(rawUrl)) {
+          if (await checkImageUrl(rawUrl)) {
             setRawUrl(rawUrl);
             setError(null);
           } else {
