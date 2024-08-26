@@ -1,9 +1,10 @@
-import { Button, Input, Slider } from '@stackframe/stack-ui';
+import { Button, Input, Slider, buttonVariants } from '@stackframe/stack-ui';
 import { Edit } from 'lucide-react';
 import { ComponentProps, useRef, useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import { UserAvatar } from './elements/user-avatar';
 import { runAsynchronously } from '@stackframe/stack-shared/dist/utils/promises';
+import { useUser } from '..';
 
 function getBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -18,15 +19,14 @@ export function ProfileImageEditor(props: {
   user: NonNullable<ComponentProps<typeof UserAvatar>['user']>,
   onProfileImageUrlChange: (profileImageUrl: string | null) => void,
 }) {
+  const user = useUser({ or: 'redirect' });
   const cropRef = useRef<AvatarEditor>(null);
   const [slideValue, setSlideValue] = useState(1);
-  const [editing, setEditing] = useState(false);
-  const [url, setUrl] = useState<string | null>(null);
+  const [rawUrl, setRawUrl] = useState<string | null>(null);
 
   function reset() {
-    setEditing(false);
     setSlideValue(1);
-    setUrl(null);
+    setRawUrl(null);
   }
 
   function upload() {
@@ -36,39 +36,26 @@ export function ProfileImageEditor(props: {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       getBase64(file)
-        .then(setUrl)
+        .then(setRawUrl)
         .then(() => input.remove())
         .catch(console.error);
     };
     input.click();
   }
 
-
-  if (!editing) {
-    return <div className='relative flex'>
-      <UserAvatar
-        size={100}
-        user={props.user}
-      />
-      <Button className='absolute top-0 right-0' variant='ghost' size='icon' onClick={() => setEditing(true)}>
-        <Edit className='h-5 w-5' />
-      </Button>
-    </div>;
-  }
-
-  if (!props.user.profileImageUrl && !url) {
-    return <div className='flex flex-col md:flex-row gap-2'>
-      <Button
-        onClick={upload}
-      >
-        Update Profile Image
-      </Button>
-      <Button
-        variant='secondary'
-        onClick={reset}
-      >
-        Cancel
-      </Button>
+  if (!rawUrl) {
+    return <div className='flex flex-col'>
+      <div className='cursor-pointer relative' onClick={upload}>
+        <UserAvatar
+          size={100}
+          user={props.user}
+        />
+        <div className='absolute top-0 left-0 h-[100px] w-[100px] bg-gray-500/20 backdrop-blur-sm items-center justify-center rounded-full flex opacity-0 hover:opacity-100 transition-opacity'>
+          <div className='bg-white p-2 rounded-full'>
+            <Edit className='h-5 w-5' />
+          </div>
+        </div>
+      </div>
     </div>;
   }
 
@@ -76,7 +63,7 @@ export function ProfileImageEditor(props: {
     <div className='flex flex-col items-center gap-4'>
       <AvatarEditor
         ref={cropRef}
-        image={url || props.user.profileImageUrl || ""}
+        image={rawUrl || props.user.profileImageUrl || ""}
         borderRadius={1000}
         color={[0, 0, 0, 0.72]}
         scale={slideValue}
@@ -92,15 +79,17 @@ export function ProfileImageEditor(props: {
         value={[slideValue]}
         onValueChange={(v) => setSlideValue(v[0])}
       />
-      <Button onClick={upload} variant='outline'>
-        Update a new image
-      </Button>
 
       <div className='flex flex-row gap-2'>
         <Button
           onClick={async () => {
-            if (!url) return;
-
+            if (cropRef.current && rawUrl) {
+              const croppedUrl = cropRef.current.getImage().toDataURL('image/jpeg');
+              await user.update({
+                profileImageUrl: croppedUrl,
+              });
+              reset();
+            }
           }}
         >
           Save

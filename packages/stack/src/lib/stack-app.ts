@@ -2378,6 +2378,7 @@ type UserUpdateOptions = {
   clientMetadata?: ReadonlyJson,
   selectedTeamId?: string | null,
   totpMultiFactorSecret?: Uint8Array | null,
+  profileImageUrl?: string | null,
 }
 function userUpdateOptionsToCrud(options: UserUpdateOptions): CurrentUserCrud["Client"]["Update"] {
   return {
@@ -2385,6 +2386,7 @@ function userUpdateOptionsToCrud(options: UserUpdateOptions): CurrentUserCrud["C
     client_metadata: options.clientMetadata,
     selected_team_id: options.selectedTeamId,
     totp_secret_base64: options.totpMultiFactorSecret != null ? encodeBase64(options.totpMultiFactorSecret) : options.totpMultiFactorSecret,
+    profile_image_url: options.profileImageUrl
   };
 }
 
